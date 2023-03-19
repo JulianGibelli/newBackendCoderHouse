@@ -58,13 +58,13 @@ export class Product {
         productos = await productsModelo.paginate(obj, {
           limit: limit ?? 10,
           page: page ?? 1,
-          sort: sort ?? { title: -1 },
+          sort: sort ?? { price: -1 },
         });
       } else {
         productos = await productsModelo.paginate({}, {
           limit: limit ?? 10,
           page: page ?? 1,
-          sort: sort ?? { title: -1 },
+          sort: sort ?? { price: 1 },
         });
       }
     } catch (error) {

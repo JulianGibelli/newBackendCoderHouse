@@ -10,13 +10,11 @@ const archivoURL = "./src/productos.json";
 //let arayprueba = [...await lecturaArchivo(archivoURL)].map((item) => item.products).flat();
 
 let arayprueba = await lecturaArchivo(archivoURL)
-console.log(arayprueba)
 
 
 async function deleteProductSocket(id) {
   let productos = await lecturaArchivo(archivoURL);
   let products = productos.map((item) => item.products).flat();
-  console.log("lectura del archivo", products);
   let productIndex = products.findIndex((product) => product.id === id);
   let productExists = productIndex !== -1;
   if (productExists) {

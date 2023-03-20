@@ -47,11 +47,13 @@ routervistas.get("/chat", (req, res) => {
 routervistas.get("/carts/:cid", async (req, res) => {
   let cid = req.params.cid;
   try {
+    
     let cartDB = await cartsModelo.find({ _id: { $eq: cid } });
-    console.log("soy cartDB", cartDB[0]["products"]);
-    if (cartDB) {
-      res.setHeader("Content-Type", "text/html");
-      res.render("cart", { cartDB, cid });
+
+    console.log("soy cartDB", cartDB);
+    if (cartDB.length) {
+      //res.setHeader("Content-Type", "text/html");
+      res.render("cart", { cartDB: cartDB[0]["products"], cid });
     } else {
       res.setHeader("Content-Type", "text/html");
       res.sendStatus(400);

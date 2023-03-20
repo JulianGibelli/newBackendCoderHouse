@@ -6,11 +6,11 @@
     <th>Quantity</th>
   </thead>
   <tbody>
-    {{#each cartDB.products}}
+    {{#each cartDB}}
       <tr>
 
-        <td>{{_id}}</td>
-        <td>{{quantity}}</td>
+        <td>{{this._id}}</td>
+        <td>{{this.quantity}}</td>
 
       </tr>
     {{/each}}

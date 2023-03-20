@@ -1,3 +1,7 @@
+// generar mi variable __dirname:
+import __dirname from "./utils/utils.js";
+// importo modulo nativo de Node, path. Para configurar rutas absolutas (por sobre rutas relativas)
+import path from "path";
 import express from "express";
 import { mongoose } from "mongoose";
 import { routerCart } from "./routes/cart/cartRoutes.js";
@@ -20,10 +24,10 @@ app.engine(
   engine({ runtimeOptions: { allowProtoPropertiesByDefault: true, allowedProtoMethods: true } })
 );
 app.set("view engine", "handlebars");
-app.set("views", "./src/views");
+app.set("views", path.join(__dirname, "../views"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static("./src/public"));
+app.use(express.static(__dirname +"/public"));
 
 app.use("/api/products", routerProductos);
 app.use("/api/carts", routerCart);
@@ -41,7 +45,7 @@ const serverhttp = app.listen(8080, (err) => {
 
 //exporto mi servidor websobket
 export const serverSocket = new Server(serverhttp);
-const mensajes = new Message()
+const mensajes = new Message();
 
 //establezco una nueva connection
 /* serverSocket.on("connection", async (socket) => {
@@ -104,13 +108,12 @@ serverSocket.on("connection", (socket) => {
     socket.broadcast.emit("nuevoUsuario", mensaje.emisor);
   });
 
-    //aca recibo mensajes desde el front y lo alojo en Atlas
-    socket.on('mensaje',(mensaje)=>{
-        console.log(`${mensaje.emisor} dice ${mensaje.mensaje}`);
+  //aca recibo mensajes desde el front y lo alojo en Atlas
+  socket.on("mensaje", (mensaje) => {
+    console.log(`${mensaje.emisor} dice ${mensaje.mensaje}`);
 
-        // aca deberia de guardar mis mensajes en la bd
-        mensajes.addMessage({user: mensaje.emisor, message:mensaje.mensaje});
-
+    // aca deberia de guardar mis mensajes en la bd
+    mensajes.addMessage({ user: mensaje.emisor, message: mensaje.mensaje });
 
     serverSocket.emit("nuevoMensaje", mensaje);
   });

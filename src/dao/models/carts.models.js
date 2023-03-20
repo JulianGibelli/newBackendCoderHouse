@@ -19,9 +19,11 @@ const cartSchema = new Schema({
     ],
   },
 });
+
 cartSchema.pre("find", function () {
-  this.populate("products.product");
+  this.populate('products.product');
 });
 
 cartSchema.plugin(mongoosePaginate);
+
 export const cartsModelo = model(cartsCollection, cartSchema);

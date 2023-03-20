@@ -20,4 +20,6 @@ routerCart.delete("/:cid", cart.deleteCart);
 //DB ENDPOINT PARA ELIMINAR UN PRODUCTO ESPECIFICO DEL CARRITO
 routerCart.delete("/:cid/products/:pid",cart.deleteProduct);
 
+routerCart.get("/:cid",cart.getCartsByCid)
+
 export { routerCart };

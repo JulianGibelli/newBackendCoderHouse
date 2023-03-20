@@ -2,71 +2,71 @@
 //ACA GENERO LA CONEXION CON MI SERVIDOR, SE HIZO UNA CONNECTION!
 //cada vez qe entre a localhost se inicia una connection nueva!
 
-let nombre = "";
 
-Swal.fire({
-  title: "Identifiquese",
-  input: "text",
-  text: "Ingrese su nickname",
-  inputValidator: (value) => {
-    return !value && "Debe ingresar un nombre...!!!";
-  },
-  allowOutsideClick: false,
-}).then((resultado) => {
-  nombre = resultado.value;
+  let nombre = "";
 
-  let divMensajes = document.querySelector("#mensajes");
-  let textMensaje = document.querySelector("#mensaje");
+  Swal.fire({
+    title: "Identifiquese",
+    input: "text",
+    text: "Ingrese su nickname",
+    inputValidator: (value) => {
+      return !value && "Debe ingresar un nombre...!!!";
+    },
+    allowOutsideClick: false,
+  }).then((resultado) => {
+    nombre = resultado.value;
 
-  textMensaje.focus();
+    let divMensajes = document.querySelector("#mensajes");
+    let textMensaje = document.querySelector("#mensaje");
 
-  textMensaje.addEventListener("keyup", (evento) => {
-    // console.log(evento.key, evento.keyCode, evento.target.value);
-    if (evento.keyCode == 13) {
-      if (evento.target.value.trim() != "") {
-        socket.emit("mensaje", {
-          emisor: nombre,
-          mensaje: evento.target.value,
-        });
-        textMensaje.value = "";
-        textMensaje.focus();
+    textMensaje.focus();
+
+    textMensaje.addEventListener("keyup", (evento) => {
+      // console.log(evento.key, evento.keyCode, evento.target.value);
+      if (evento.keyCode == 13) {
+        if (evento.target.value.trim() != "") {
+          socket.emit("mensaje", {
+            emisor: nombre,
+            mensaje: evento.target.value,
+          });
+          textMensaje.value = "";
+          textMensaje.focus();
+        }
       }
-    }
-  });
-
-  socket = io();
-
-  socket.on("hola", (objeto) => {
-    console.log(`${objeto.emisor} dice ${objeto.mensaje}`);
-
-    objeto.mensajes.forEach((el) => {
-      divMensajes.innerHTML += `<br><div class='mensaje'><strong>${el.emisor}</strong> dice <i>${el.mensaje}</i></div>`;
     });
 
-    divMensajes.scrollTop = divMensajes.scrollHeight;
+    socket = io();
 
-    socket.emit("respuestaAlSaludo", {
-      emisor: nombre,
-      mensaje: `Hola, desde el Frontend`,
+    socket.on("hola", (objeto) => {
+      console.log(`${objeto.emisor} dice ${objeto.mensaje}`);
+
+      objeto.mensajes.forEach((el) => {
+        divMensajes.innerHTML += `<br><div class='mensaje'><strong>${el.emisor}</strong> dice <i>${el.mensaje}</i></div>`;
+      });
+
+      divMensajes.scrollTop = divMensajes.scrollHeight;
+
+      socket.emit("respuestaAlSaludo", {
+        emisor: nombre,
+        mensaje: `Hola, desde el Frontend`,
+      });
+    });
+
+    socket.on("nuevoUsuario", (usuario) => {
+      Swal.fire({
+        text: `${usuario} se ha conectado...!!!`,
+        toast: true,
+        position: "top-right",
+      });
+    });
+
+    socket.on("nuevoMensaje", (mensaje) => {
+      divMensajes.innerHTML += `<br><div class='mensaje'><strong>${mensaje.emisor}</strong> dice <i>${mensaje.mensaje}</i></div>`;
+
+      divMensajes.scrollTop = divMensajes.scrollHeight;
     });
   });
 
-  socket.on("nuevoUsuario", (usuario) => {
-    Swal.fire({
-      text: `${usuario} se ha conectado...!!!`,
-      toast: true,
-      position: "top-right",
-    });
-  });
-
-  socket.on("nuevoMensaje", (mensaje) => {
-    divMensajes.innerHTML += `<br><div class='mensaje'><strong>${mensaje.emisor}</strong> dice <i>${mensaje.mensaje}</i></div>`;
-
-    divMensajes.scrollTop = divMensajes.scrollHeight;
-  });
-
-  
-});
 
 /*
 //LOGICA DE MIS VISTAS
@@ -75,14 +75,14 @@ if (location.pathname == "/realtimeproducts") {
   deleteProductForm.addEventListener("submit", (e) => {
     //prevengo la accion por defecto del formulario de eliminacion
     e.preventDefault();
-
+    
     //lo guardo en una variable y lo envio al servidor websocket
     let id = e.target[0].value.trim();
     socket.emit("deleteProduct", id);
     //reseteo el formulario
     e.target.reset();
   });
-
+  
   let addProductoForm = document.getElementById("addProductForm");
   addProductoForm.addEventListener("submit", (e) => {
     //prevengo la accion por defecto del formulario de alta de producto
@@ -90,7 +90,7 @@ if (location.pathname == "/realtimeproducts") {
     const data = new FormData(addProductoForm);
     let objetoEmpty = {};
     const code = data.get("code");
-
+    
     for (const value of data.values()) {
       if (!value) {
         alert("Complete todos los datos!");

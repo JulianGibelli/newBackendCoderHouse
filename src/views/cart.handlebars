@@ -1,0 +1,18 @@
+<h2>Cart {{cid}}</h2>
+
+<table>
+  <thead>
+    <th>ID</th>
+    <th>Quantity</th>
+  </thead>
+  <tbody>
+    {{#each cartDB.products}}
+      <tr>
+
+        <td>{{_id}}</td>
+        <td>{{quantity}}</td>
+
+      </tr>
+    {{/each}}
+  </tbody>
+</table>

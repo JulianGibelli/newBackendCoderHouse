@@ -86,4 +86,31 @@ export class Cart {
       });
     }
   }
+
+  async getCartsByCid(req, res){
+
+    let cid = req.params.cid;
+    try{
+        let cartDB = await cartsModelo.findById(cid).populate("products.product");
+        if( cartDB ){
+            res.setHeader('Content-Type','application/json');
+            res.status(200).json({
+                ok: true,
+                cart: cartDB
+            });
+        }else{
+            res.setHeader('Content-Type','application/json');
+            res.status(400).json({
+                ok: false,
+                msg: `Cannot find the cart with id ${cid}`
+            });
+        }   
+    } catch (error) {
+        console.log(error);
+        res.setHeader('Content-Type','application/json');
+        res.status(500).json({
+            msg: "Cannot connect with database"
+        });
+    }
+};
 }

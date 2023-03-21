@@ -66,11 +66,7 @@ routervistas.get("/carts/:cid", async (req, res) => {
   } */ let cid = req.params.cid;
 
   try {
-    if (!mongoose.Types.ObjectId.isValid(cid)) {
-      res.setHeader("Content-Type", "text/html");
-
-      res.sendStatus(400);
-    } else {
+    
       let cartDB = await cartsModelo.find({ _id: { $eq: cid } });
 
       console.log("soy cartDB", cartDB[0]["products"]);
@@ -82,7 +78,7 @@ routervistas.get("/carts/:cid", async (req, res) => {
 
         res.sendStatus(400);
       }
-    }
+    
   } catch (error) {
     console.log(error);
 

@@ -6,7 +6,7 @@ export class Cart {
 
   //unicamente da de alta un nuevo carrito en mi coleccion, le asigna un id (siempre distinto automaticamente) y un products vacio
   async addCart(req, res) {
-    let cartCreado = await cartsModelo.create({ });
+    let cartCreado = await cartsModelo.create({});
 
     res.setHeader("Content-Type", "application/json");
     res.status(201).json({
@@ -25,17 +25,24 @@ export class Cart {
     if (cart) {
       //recorro sus productos
 
-      let productIndex = cart.products.findIndex((item) => item._id.toString() == req.params.pid);
+      let productIndex = cart.products.findIndex((item) => item.product == req.params.pid);
       if (productIndex !== -1) {
-        await cartsModelo.updateOne(
-          { _id: req.params.cid, "products._id": req.params.pid },
-          { $inc: { "products.$.quantity": quantity } }
-        );
+        cart.products[productIndex].quantity++;
+        await cartsModelo.updateOne({ _id: req.params.cid }, cart);
+        // await cartsModelo.updateOne(
+        //   { _id: req.params.cid, "products._id": req.params.pid },
+        //   { $inc: { "products.$.quantity": quantity } }
+        // );
       } else {
-        await cartsModelo.updateOne(
-          { _id: req.params.cid },
-          { $push: { products: { _id: req.params.pid, quantity: quantity } } }
-        );
+        cart.products.push({
+          product: req.params.pid,
+          quantity: 1,
+        });
+        await cartsModelo.updateOne({ _id: req.params.cid }, cart);
+        // await cartsModelo.updateOne(
+        //   { _id: req.params.cid },
+        //   { $push: { products: { _id: req.params.pid, quantity: quantity } } }
+        // );
       }
       return res.status(201).json({ message: "Product added successfully" });
     } else {
@@ -69,7 +76,7 @@ export class Cart {
           //encontre el producto para eliminar
           await cartsModelo.updateOne(
             { _id: req.params.cid },
-            { $pull: { products: { _id:productId } } }
+            { $pull: { products: { _id: productId } } }
           );
         } else {
           //mandaron otro id y no se encontro
@@ -87,30 +94,29 @@ export class Cart {
     }
   }
 
-  async getCartsByCid(req, res){
-
+  async getCartsByCid(req, res) {
     let cid = req.params.cid;
-    try{
-        let cartDB = await cartsModelo.findById(cid).populate("products.product");
-        if( cartDB ){
-            res.setHeader('Content-Type','application/json');
-            res.status(200).json({
-                ok: true,
-                cart: cartDB
-            });
-        }else{
-            res.setHeader('Content-Type','application/json');
-            res.status(400).json({
-                ok: false,
-                msg: `Cannot find the cart with id ${cid}`
-            });
-        }   
-    } catch (error) {
-        console.log(error);
-        res.setHeader('Content-Type','application/json');
-        res.status(500).json({
-            msg: "Cannot connect with database"
+    try {
+      let cartDB = await cartsModelo.findById(cid).populate("products.product");
+      if (cartDB) {
+        res.setHeader("Content-Type", "application/json");
+        res.status(200).json({
+          ok: true,
+          cart: cartDB,
         });
+      } else {
+        res.setHeader("Content-Type", "application/json");
+        res.status(400).json({
+          ok: false,
+          msg: `Cannot find the cart with id ${cid}`,
+        });
+      }
+    } catch (error) {
+      console.log(error);
+      res.setHeader("Content-Type", "application/json");
+      res.status(500).json({
+        msg: "Cannot connect with database",
+      });
     }
-};
+  }
 }

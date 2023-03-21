@@ -6,7 +6,7 @@ export class Cart {
 
   //unicamente da de alta un nuevo carrito en mi coleccion, le asigna un id (siempre distinto automaticamente) y un products vacio
   async addCart(req, res) {
-    let cartCreado = await cartsModelo.create({ products: [] });
+    let cartCreado = await cartsModelo.create({ });
 
     res.setHeader("Content-Type", "application/json");
     res.status(201).json({

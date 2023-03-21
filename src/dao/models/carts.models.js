@@ -1,6 +1,7 @@
 //importo funciones de schema y modelo desde mongoose
 import { Schema, model } from "mongoose";
 import mongoosePaginate from "mongoose-paginate-v2";
+import mongoose from "mongoose";
 //defino como se llamara mi nueva coleccion
 const cartsCollection = "carts";
 
@@ -9,7 +10,7 @@ const cartSchema = new Schema({
     type: [
       {
         product: {
-          type: Schema.Types.ObjectId,
+          type: mongoose.Schema.Types.ObjectId,
           ref: "products",
         },
         quantity: {
@@ -17,6 +18,7 @@ const cartSchema = new Schema({
         },
       },
     ],
+    default: []
   },
 });
 

@@ -1,16 +1,24 @@
-<h2>Cart {{cid}}</h2>
+<h2 style="color: cadetblue;">Cart: {{cid}}</h2>
 
-<table>
-  <thead>
-    <th>ID</th>
-    <th>Quantity</th>
+<table style="border: solid 2px black;">
+  <thead style="text-decoration: underline;">
+    <th>Title</th>
+    <th>Description</th>
+    <th>Price</th>
+    <th>Code</th>
+    <th>Stock</th>
+    <th>Category</th>
   </thead>
   <tbody>
     {{#each cartDB}}
       <tr>
 
-        <td>{{this._id}}</td>
-        <td>{{this.quantity}}</td>
+        <td>{{this.product.title}}</td>
+        <td>{{this.product.description}}</td>
+        <td>{{this.product.price}}</td>
+        <td>{{this.product.code}}</td>
+        <td>{{this.product.stock}}</td>
+        <td>{{this.product.category}}</td>
 
       </tr>
     {{/each}}

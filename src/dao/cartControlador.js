@@ -24,25 +24,16 @@ export class Cart {
     //si encontro el carrito
     if (cart) {
       //recorro sus productos
-
       let productIndex = cart.products.findIndex((item) => item.product == req.params.pid);
       if (productIndex !== -1) {
-        cart.products[productIndex].quantity++;
+        cart.products[productIndex].quantity += parseInt(quantity);
         await cartsModelo.updateOne({ _id: req.params.cid }, cart);
-        // await cartsModelo.updateOne(
-        //   { _id: req.params.cid, "products._id": req.params.pid },
-        //   { $inc: { "products.$.quantity": quantity } }
-        // );
       } else {
         cart.products.push({
           product: req.params.pid,
-          quantity: 1,
+          quantity: parseInt(quantity),
         });
         await cartsModelo.updateOne({ _id: req.params.cid }, cart);
-        // await cartsModelo.updateOne(
-        //   { _id: req.params.cid },
-        //   { $push: { products: { _id: req.params.pid, quantity: quantity } } }
-        // );
       }
       return res.status(201).json({ message: "Product added successfully" });
     } else {

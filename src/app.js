@@ -4,6 +4,10 @@ import __dirname from "./utils/utils.js";
 import path from "path";
 import express from "express";
 import { mongoose } from "mongoose";
+//necesarios para manejo de sessiones con Atlas
+import session from "express-session";
+import MongoStore from "connect-mongo";
+
 import { routerCart } from "./routes/cart/cartRoutes.js";
 import { routerProductos } from "./routes/products/productsRoutes.js";
 import { routervistas } from "./routes/viewRoutes/vistasRoutes.js";
@@ -29,11 +33,27 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "../public")));
 
+app.use(
+  session({
+    secret: "miPalabraSecreta",
+    resave: true,
+    saveUninitialized: true,
+    store: MongoStore.create({
+      mongoUrl:"mongodb+srv://juligibelli:123Ar456.@cluster0.ysg0sy4.mongodb.net/?retryWrites=true&w=majority&dbName=sessions",
+      ttl: 60,
+    }),
+  })
+);
+
 app.use("/api/products", routerProductos);
 app.use("/api/carts", routerCart);
 
 //le indico que todo lo que vaya a / sea renderizado por el router de vistas que llama a la vista home para que muestre el contenido
 app.use("/", routervistas);
+//lo que vaya a /api/session sera manejado por el ruteador de sessiones -> para Login de usuario.
+app.use("/api/sessions", sessionsRouter);
+
+
 
 const serverhttp = app.listen(8080, (err) => {
   if (err) {
@@ -47,50 +67,7 @@ const serverhttp = app.listen(8080, (err) => {
 export const serverSocket = new Server(serverhttp);
 const mensajes = new Message();
 
-//establezco una nueva connection
-/* serverSocket.on("connection", async (socket) => {
-  //cuando se conecta un nuevo cliente lo saludo y emito el listado de productos
-  console.log("New client connected", socket.handshake.headers.referer);
 
-  //si se trata de una conexion a realtime products
-  if (socket.handshake.headers.referer.includes("/realtimeproducts")) {
-    let arayprueba = await lecturaArchivo("./src/productos.json");
-    socket.emit("products", arayprueba);
-  }
-
-  socket.on("deleteProduct", async (id) => {
-    let response = await deleteProductSocket(id);
-    let arayprueba = await lecturaArchivo("./src/productos.json");
-    socket.emit("deleteProductRes", response, arayprueba);
-  });
-
-  socket.on("addProduct", async (data) => {
-    let response = await addProductSocket(data);
-    let arayprueba = await lecturaArchivo("./src/productos.json");
-    socket.emit("addProductRes", response, arayprueba);
-  });
-
-  socket.emit("hola", {
-    emisor: "Servidor",
-    mensaje: `Hola, desde el server...!!!`,
-    mensajes,
-  });
-
-  socket.on("respuestaAlSaludo", (mensaje) => {
-    console.log(`${mensaje.emisor} dice ${mensaje.mensaje}`);
-
-    socket.broadcast.emit("nuevoUsuario", mensaje.emisor);
-  });
-
-  socket.on("mensaje", (mensaje) => {
-    console.log(`${mensaje.emisor} dice ${mensaje.mensaje}`);
-    
-    mensajes.push(mensaje);
-    console.log(mensajes);
-
-    socket.broadcast.emit("nuevoMensaje", mensaje);
-  });
-}); */
 
 serverSocket.on("connection", (socket) => {
   // console.log(socket.handshake);

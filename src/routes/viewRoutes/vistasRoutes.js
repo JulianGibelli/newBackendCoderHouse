@@ -4,6 +4,7 @@ import { lecturaArchivo, escrituraArchivo } from "../../utils/utils.js";
 import { serverSocket } from "../../app.js";
 import { cartsModelo } from "../../dao/models/carts.models.js";
 import mongoose from "mongoose";
+import { productsModelo } from "../../dao/models/products.models.js";
 
 const routervistas = Router();
 const archivoURL = "./src/productos.json";
@@ -27,10 +28,10 @@ async function deleteProductSocket(id) {
   }
 }
 
-routervistas.get("/", (req, res) => {
+/* routervistas.get("/", (req, res) => {
   res.setHeader("Content-Type", "text/html");
   res.status(200).render("home", { arayprueba });
-});
+}); */
 
 //cuando el cliente va a la ruta /realtimeproducts
 routervistas.get("/realtimeproducts", (req, res) => {
@@ -86,6 +87,36 @@ routervistas.get("/carts/:cid", async (req, res) => {
 
     res.sendStatus(500);
   }
+});
+
+const auth = (req, res, next) => {
+  if (!req.session.usuario) return res.redirect("/login"); //return res.sendStatus(401);
+  next();
+};
+
+const auth2 = (req, res, next) => {
+  if (req.session.usuario) return res.redirect("/"); //return res.sendStatus(401);
+  next();
+};
+
+routervistas.get("/", auth, async(req, res) => {
+ let productos = await productsModelo.find({})
+ console.log(productos)
+  res.setHeader("Content-Type", "text/html");
+  res.status(200).render("home", {
+    nombreCompleto: req.session.usuario.nombre + " " + req.session.usuario.apellido,
+    productos
+  });
+});
+
+routervistas.get("/registro", auth2, (req, res) => {
+  res.setHeader("Content-Type", "text/html");
+  res.status(200).render("registro");
+});
+
+routervistas.get("/login", auth2, (req, res) => {
+  res.setHeader("Content-Type", "text/html");
+  res.status(200).render("login");
 });
 
 export { routervistas };

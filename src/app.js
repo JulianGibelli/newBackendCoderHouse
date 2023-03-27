@@ -9,6 +9,7 @@ import session from "express-session";
 import MongoStore from "connect-mongo";
 
 import { routerCart } from "./routes/cart/cartRoutes.js";
+import { router as sessionsRouter } from "./routes/sessions/sessions.router.js";
 import { routerProductos } from "./routes/products/productsRoutes.js";
 import { routervistas } from "./routes/viewRoutes/vistasRoutes.js";
 import { engine } from "express-handlebars";
@@ -39,7 +40,7 @@ app.use(
     resave: true,
     saveUninitialized: true,
     store: MongoStore.create({
-      mongoUrl:"mongodb+srv://juligibelli:123Ar456.@cluster0.ysg0sy4.mongodb.net/?retryWrites=true&w=majority&dbName=sessions",
+      mongoUrl:"mongodb+srv://juligibelli:123Ar456.@cluster0.ysg0sy4.mongodb.net/?retryWrites=true&w=majority&dbName=ecommerce",
       ttl: 60,
     }),
   })

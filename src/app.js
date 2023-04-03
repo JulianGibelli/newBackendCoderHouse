@@ -14,13 +14,10 @@ import { routerProductos } from "./routes/products/productsRoutes.js";
 import { routervistas } from "./routes/viewRoutes/vistasRoutes.js";
 import { engine } from "express-handlebars";
 import { Server } from "socket.io";
-import {
-  lecturaArchivo,
-  escrituraArchivo,
-  deleteProductSocket,
-  addProductSocket,
-} from "./utils/utils.js";
+
 import { Message } from "./dao/messagesControlador.js";
+import passport from "passport";
+import { inicializaEstrategias } from "./config/passport.config.js";
 
 const app = express();
 
@@ -45,6 +42,10 @@ app.use(
     }),
   })
 );
+inicializaEstrategias();
+app.use(passport.initialize());
+app.use(passport.session());
+
 
 app.use("/api/products", routerProductos);
 app.use("/api/carts", routerCart);

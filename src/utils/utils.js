@@ -3,6 +3,7 @@ import { dirname } from "path";
 import { existsSync } from "fs";
 import { readFile, writeFile } from "node:fs/promises";
 import { v4 as uuidv4 } from "uuid";
+import bcrypt from 'bcrypt'
 
 //funcion de lectura de archivo, tomando como parametro el path del archivo
 export async function lecturaArchivo(path) {
@@ -60,5 +61,13 @@ export async function addProductSocket(objetoEmpty, code) {
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+
+export const creaHash = (password) => {
+  return bcrypt.hashSync(password, bcrypt.genSaltSync(10));
+};
+
+export const esClaveValida = (password, usuario) => {
+  return bcrypt.compareSync(password, usuario.password);
+};
 
 export default __dirname;

@@ -1,50 +1,59 @@
 import { Router } from "express";
-import { usuarioModelo } from "../../dao/models/usuario.models.js";
-import crypto from "crypto";
+// import crypto from 'crypto';
+// import { usuarioModelo } from "../models/usuario.modelo.js";
+// import { creaHash, esClaveValida } from "../utils/utils.js";
+import passport from "passport";
 
 export const router = Router();
 
-router.post("/registro", async (req, res) => {
-  let { nombre, apellido, email, password, edad } = req.body;
+router.get("/github", passport.authenticate("github", {}), (req, res) => {});
 
-  if (!email || !password) return res.sendStatus(400);
+router.get(
+  "/callbackGithub",
+  passport.authenticate("github", { failureRedirect: "/login" }),
+  (req, res) => {
+    req.session.usuario = {
+      nombre: req.user.nombre,
+      apellido: req.user.apellido,
+      email: req.user.email,
+      edad: req.user.edad,
+    };
 
-  let usuarioActual = await usuarioModelo.findOne({ email: email });
+    res.redirect("/");
+  }
+);
 
-  if (usuarioActual) return res.sendStatus(400);
+router.post(
+  "/registro",
+  passport.authenticate("registro", {
+    failureRedirect: "/api/sessions/errorRegistro",
+    successRedirect: "/login",
+  }),
+  async (req, res) => {}
+);
 
-  usuarioModelo.create({
-    nombre,
-    apellido,
-    email,
-    password: crypto.createHash("sha256", "palabraSecreta").update(password).digest("base64"),
-    edad,
-  });
-
-  res.redirect("/login");
+router.get("/errorRegistro", (req, res) => {
+  res.send("Error Registro...");
 });
 
-router.post("/login", async (req, res) => {
-  let { email, password } = req.body;
-
-  if (!email || !password) return res.sendStatus(400);
-
-  let usuario = await usuarioModelo.findOne({
-    email: email,
-    password: crypto.createHash("sha256", "palabraSecreta").update(password).digest("base64"),
-  });
-
-  if (!usuario) return res.sendStatus(401);
-
-  req.session.usuario = {
-    nombre: usuario.nombre,
-    apellido: usuario.apellido,
-    email,
-    edad: usuario.edad,
-  };
-
-  res.redirect("/");
+router.get("/errorLogin", (req, res) => {
+  res.send("Error Login...");
 });
+
+router.post(
+  "/login",
+  passport.authenticate("login", { failureRedirect: "/api/sessions/errorLogin" }),
+  async (req, res) => {
+    req.session.usuario = {
+      nombre: req.user.nombre,
+      apellido: req.user.apellido,
+      email: req.user.email,
+      edad: req.user.edad,
+    };
+
+    res.redirect("/");
+  }
+);
 
 router.get("/logout", (req, res) => {
   req.session.destroy((err) => {

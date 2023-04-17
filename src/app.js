@@ -1,115 +1,108 @@
-// generar mi variable __dirname:
-import __dirname from "./utils/utils.js";
-// importo modulo nativo de Node, path. Para configurar rutas absolutas (por sobre rutas relativas)
-import path from "path";
 import express from "express";
-import { mongoose } from "mongoose";
-//necesarios para manejo de sessiones con Atlas
-import session from "express-session";
-import MongoStore from "connect-mongo";
-
-import { routerCart } from "./routes/cart/cartRoutes.js";
-import { router as sessionsRouter } from "./routes/sessions/sessions.router.js";
-import { routerProductos } from "./routes/products/productsRoutes.js";
-import { routervistas } from "./routes/viewRoutes/vistasRoutes.js";
 import { engine } from "express-handlebars";
 import { Server } from "socket.io";
-
-import { Message } from "./dao/messagesControlador.js";
+import mongoose from "mongoose";
+import { __dirname, createToken, authToken } from "./helpers/utils.js";
+import path from "path";
+import cookieParser from "cookie-parser";
+//import session from "express-session";
+//import MongoStore from "connect-mongo";
 import passport from "passport";
-import { inicializaEstrategias } from "./config/passport.config.js";
+import { initializePassport } from "./config/passport.config.js";
+
+import productsDBRouter from "./routes/productsDB.router.js";
+import cartsDBRouter from "./routes/cartsDB.router.js";
+import viewsRouter from "./routes/views.router.js";
+import sessionsRouter from "./routes/sessions.router.js";
+
+import productManagerDB from "./dao/productManagerDB.js";
+import { messagesModel } from "./dao/models/messages.model.js";
 
 const app = express();
+const port = 8080;
+const pm = new productManagerDB();
+const dbUrl =
+  "mongodb+srv://juligibelli:123Ar456.@cluster0.ysg0sy4.mongodb.net/?retryWrites=true&w=majority&dbName=ecommerce";
 
 app.engine(
   "handlebars",
-  engine({ runtimeOptions: { allowProtoPropertiesByDefault: true, allowedProtoMethods: true } })
+  engine({
+    runtimeOptions: {
+      allowProtoPropertiesByDefault: true,
+      allowProtoMethodsByDefault: true,
+    },
+  })
 );
 app.set("view engine", "handlebars");
 app.set("views", path.join(__dirname, "../views"));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, "../public")));
 
-app.use(
+app.use(cookieParser());
+
+/* app.use(
   session({
-    secret: "miPalabraSecreta",
+    secret: "mySecretKey",
     resave: true,
     saveUninitialized: true,
     store: MongoStore.create({
-      mongoUrl:"mongodb+srv://juligibelli:123Ar456.@cluster0.ysg0sy4.mongodb.net/?retryWrites=true&w=majority&dbName=ecommerce",
+      mongoUrl: dbUrl,
       ttl: 60,
     }),
   })
-);
-inicializaEstrategias();
+); */
+
+initializePassport();
 app.use(passport.initialize());
-app.use(passport.session());
+//app.use(passport.session());
 
-
-app.use("/api/products", routerProductos);
-app.use("/api/carts", routerCart);
-
-//le indico que todo lo que vaya a / sea renderizado por el router de vistas que llama a la vista home para que muestre el contenido
-app.use("/", routervistas);
-//lo que vaya a /api/session sera manejado por el ruteador de sessiones -> para Login de usuario.
+app.use(express.static(path.join(__dirname, "../public")));
+app.use("/", viewsRouter);
 app.use("/api/sessions", sessionsRouter);
+app.use("/api/cartsDB", cartsDBRouter);
+app.use("/api/productsDB", productsDBRouter);
 
-
-
-const serverhttp = app.listen(8080, (err) => {
-  if (err) {
-    throw new Error("super errorrr!!!...");
-  } else {
-    console.log("Example app listening on port 8080!");
-  }
+const httpServer = app.listen(port, () => {
+  console.log(`Server escuchando en puerto: ${port}`);
 });
 
-//exporto mi servidor websobket
-export const serverSocket = new Server(serverhttp);
-const mensajes = new Message();
+const io = new Server(httpServer);
 
+io.on("connection", async (socket) => {
+  console.log("New client connected");
 
-
-serverSocket.on("connection", (socket) => {
-  // console.log(socket.handshake);
-  console.log(`Se han conectado, socket id ${socket.id}`);
-
-  socket.emit("hola", {
-    emisor: "Servidor",
-    mensaje: `Hola, desde el server...!!!`,
-    mensajes,
+  socket.on("deleteProduct", async (id) => {
+    let response = await pm.deleteProductSocket(id);
+    socket.emit("deleteProductRes", response);
+    if (response.success) {
+      socket.broadcast.emit("productListUpdated");
+    }
   });
 
-  socket.on("respuestaAlSaludo", (mensaje) => {
-    console.log(`${mensaje.emisor} dice ${mensaje.mensaje}`);
-
-    socket.broadcast.emit("nuevoUsuario", mensaje.emisor);
+  socket.on("addProduct", async (product) => {
+    let response = await pm.addProductSocket(product);
+    socket.emit("addProductRes", response);
+    if (response.success) {
+      socket.broadcast.emit("productListUpdated");
+    }
   });
 
-  //aca recibo mensajes desde el front y lo alojo en Atlas
-  socket.on("mensaje", (mensaje) => {
-    console.log(`${mensaje.emisor} dice ${mensaje.mensaje}`);
-
-    // aca deberia de guardar mis mensajes en la bd
-    mensajes.addMessage({ user: mensaje.emisor, message: mensaje.mensaje });
-
-    serverSocket.emit("nuevoMensaje", mensaje);
+  socket.on("newMessage", async ({ user, message }) => {
+    await messagesModel.create({ user: user, message: message });
+    io.emit("messagesListUpdated");
   });
-}); // fin de server.on connection
+});
 
-const conectar = async () => {
+const connectDB = async () => {
   try {
-    // acceso a servidor local:
-    // await mongoose.connect('mongodb://127.0.0.1:27017/pruebas_mongo')
-
-    await mongoose.connect(
-      "mongodb+srv://juligibelli:123Ar456.@cluster0.ysg0sy4.mongodb.net/?retryWrites=true&w=majority&dbName=ecommerce"
-    );
-    console.log(`Conexión a DB establecida`);
-  } catch (err) {
-    console.log(`Error al conectarse con el servidor de BD: ${err}`);
+    await mongoose.connect(dbUrl);
+    console.log("Conexion con DB correcta");
+  } catch (error) {
+    console.log(`Fallo al conectar con DB. Error: ${error}`);
   }
 };
 
-conectar();
+connectDB();
+
+io.on("error", (error) => console.error(error));

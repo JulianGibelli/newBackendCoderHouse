@@ -1,11 +1,16 @@
-<h1>CHAT:</h1>
+<h1>Chat</h1>
+<h2>Enviar mensaje</h2>
+<form id="sendMessage" action="">
+  <input type="text" placeholder="Ingrese su mensaje aquí" />
+  <br />
+  <input type="submit" value="Enviar" />
+</form>
+<h2>Mensajes</h2>
+<div id="messagesList">
+  {{#each messages}}
+    <p><b>{{this.user}}</b> dice: <i>"{{this.message}}"</i></p>
+  {{/each}}
+</div>
 
-<input type="text" id="mensaje" placeholder="Ingrese un mensaje">
-
-<div id="mensajes"></div>
-
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    {{!-- ESTE ES MI FRONTEND LO VINCULO CON MI SERVIDO WEBSOCKET --}}
-    <script src="socket.io/socket.io.js"></script>
-    {{!-- mi archivo de logica para vincular front con servidor, rutas desde public! --}}
-    <script src="index.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+<script src="/js/chat.js"></script>

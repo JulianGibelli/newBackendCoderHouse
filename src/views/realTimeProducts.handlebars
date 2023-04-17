@@ -1,32 +1,48 @@
-<h1>Lista de productos cargados via websocket!!</h1>
-<ul id="productList">
-  {{#each arayprueba}}
-    <li>id:{{this.id}} - quantity: {{this.quantity}}</li>
-  {{/each}}
-</ul>
-
+<h1>Productos en tiempo real</h1>
 <h2>Eliminar producto</h2>
 <form id="deleteProductForm" action="">
-  <input type="text" name="idInput" placeholder="Ingrese ID" />
+  <input type="text" placeholder="Ingrese ID" />
   <br />
   <input type="submit" value="Enviar" />
 </form>
-
 <h2>Crear producto</h2>
 <form id="addProductForm" action="">
-  <input type="text" name="title" placeholder="title" />
+  <input type="text" placeholder="title" />
   <br />
-  <input type="text" name="description" placeholder="description" />
+  <input type="text" placeholder="description" />
   <br />
-  <input type="number" name="code" placeholder="code" />
+  <input type="text" placeholder="code" />
   <br />
-  <input type="number" name="price" placeholder="price" />
+  <input type="text" placeholder="price" />
   <br />
-  <input type="text" name="status" placeholder="status" />
+  <input type="text" placeholder="status" />
   <br />
-  <input type="text" name="stock" placeholder="stock" />
+  <input type="text" placeholder="stock" />
   <br />
-  <input type="text" name="category" placeholder="category" />
+  <input type="text" placeholder="category" />
+  <br />
+  <input type="text" placeholder="thumbnail 1" />
+  <br />
+  <input type="text" placeholder="thumbnail 2" />
   <br />
   <input type="submit" value="Enviar" />
 </form>
+<h2>Lista de productos</h2>
+<span id="toast">Lista actualizada!</span>
+{{#each products.payload}}
+  <div>
+    <h2>Title: {{this.title}}</h2>
+    <p>Category: {{this.category}}</p>
+    <p>Description: {{this.description}}</p>
+    <p>Price: ${{this.price}}</p>
+    {{#if this.status}}
+      <p>Disponible</p>
+    {{else}}
+      <p>No disponible</p>
+    {{/if}}
+    <hr>
+  </div>
+{{/each}}
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="/js/realTimeProducts.js"></script>
